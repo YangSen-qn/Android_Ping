@@ -1,2 +1,4 @@
 rootProject.name='Ping'
 include ':app'
+include ':ping'
+//project(':library').projectDir = new File('./QiNiu_Android/library')

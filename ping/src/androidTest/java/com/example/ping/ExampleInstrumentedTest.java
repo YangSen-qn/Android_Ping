@@ -7,15 +7,9 @@ import com.ping.PingOption;
 
 import junit.framework.TestCase;
 
-
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
 public class ExampleInstrumentedTest extends TestCase {
 
-    public void testPing() {
+    public void test_Ping() {
 
         PingOption option = new PingOption();
         option.timeout = 3;

@@ -1,4 +1,4 @@
-package com.example.ping.ping;
+package com.ping;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,7 +39,6 @@ public class Ping {
 
     public void stopPing(){
 
-
     }
 
     private void ping(){
@@ -77,15 +76,19 @@ public class Ping {
         switch (parser.type){
             case Start:{
                 pingListener.pingDidStart(this, parser.sentPackageSize);
+                break;
             }
             case Normal:{
-                pingListener.pingReceivePacket(this, parser.sequenceNumber, parser.sentPackageSize);
+                pingListener.pingReceivePacket(this, parser.sequenceNumber, parser.time, parser.sentPackageSize);
+                break;
             }
             case End:{
                 pingListener.pingComplete(this, parser.sentPackageCount, parser.receivedPackageCount);
+                break;
             }
             case Timeout:{
                 pingListener.pingDidTimeout(this, parser.sequenceNumber);
+                break;
             }
         }
     }
@@ -93,7 +96,7 @@ public class Ping {
     public interface PingListener {
         void pingDidStart(Ping ping, int dataBytesLength);
         void pingDidTimeout(Ping ping, int sequenceNumber);
-        void pingReceivePacket(Ping ping, int sequenceNumber, int dataBytesLength);
+        void pingReceivePacket(Ping ping, int sequenceNumber, float spendTime, int dataBytesLength);
         void pingComplete(Ping ping, int sendPacketsCount, int receivedPacketsCount);
     }
 }
