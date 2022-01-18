@@ -1,4 +1,4 @@
-package com.example.ping.ping;
+package com.ping;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,7 +19,7 @@ public class PingResultParser {
     public int receivedPackageCount;
     public String ip;
     public int ttl;
-    public int time;
+    public float time;
     public int sentPackageSize;
     public int sequenceNumber;
 
@@ -29,20 +29,26 @@ public class PingResultParser {
         this.result = result;
 
         if (isNormalPing()){
+            this.type = Type.Normal;
             this.ip = getPingIP();
             this.sequenceNumber = getPingSequenceNumber();
             this.sentPackageSize = getPingPackageSize();
             this.ttl = getPingTTL();
             this.time = getPingTime();
         } else if (isPingStart()) {
+            this.type = Type.Start;
             this.ip = getPingIP();
             this.sentPackageSize = getStartPingPackageSize();
         } else if (isPingEnd()) {
+            this.type = Type.End;
             this.sentPackageCount = getPingTotalSentPackageCount();
             this.receivedPackageCount = getPingTotalReceivedPackageCount();
         } else if (isTimeout()){
+            this.type = Type.Timeout;
             this.ip = getPingIP();
             this.sequenceNumber = getPingSequenceNumber();
+        } else {
+            this.type = Type.Unknown;
         }
     }
 
@@ -66,11 +72,11 @@ public class PingResultParser {
         Pattern pattern = Pattern.compile("\\d+(?=(\\(\\d+\\))? bytes of)", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(result);
         String sizeString = null;
-        try {
+        if (matcher.find()){
             sizeString = matcher.group();
-        } catch (IllegalStateException ignore){}
+        }
 
-        if (sizeString.length() == 0){
+        if (sizeString == null || sizeString.length() == 0){
             return -1;
         } else {
             return Integer.parseInt(sizeString);
@@ -78,14 +84,14 @@ public class PingResultParser {
     }
 
     private int getPingPackageSize(){
-        Pattern pattern = Pattern.compile("(?<=icmp_seq=)\\d+", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("\\d+(?=(\\(\\d+\\))? bytes from)", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(result);
         String sizeString = null;
-        try {
+        if (matcher.find()){
             sizeString = matcher.group();
-        } catch (IllegalStateException ignore){}
+        }
 
-        if (sizeString.length() == 0){
+        if (sizeString == null || sizeString.length() == 0){
             return -1;
         } else {
             return Integer.parseInt(sizeString);
@@ -96,21 +102,20 @@ public class PingResultParser {
         Pattern pattern = Pattern.compile("((\\d{0,3}\\.){3}\\d{0,3}|([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(result);
         String ip = null;
-        try {
+        if (matcher.find()){
             ip = matcher.group();
-        } catch (IllegalStateException ignore){}
+        }
         return ip;
     }
 
     private int getPingSequenceNumber(){
-        Pattern pattern = Pattern.compile("(?<= icmp_seq=)\\d+ ", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("(?<= icmp_seq=)\\d+", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(result);
         String numString = null;
-        try {
+        if (matcher.find()){
             numString = matcher.group();
-        } catch (IllegalStateException ignore){}
-
-        if (numString.length() == 0){
+        }
+        if (numString == null || numString.length() == 0){
             return -1;
         } else {
             return Integer.parseInt(numString);
@@ -118,32 +123,30 @@ public class PingResultParser {
     }
 
     private int getPingTTL(){
-        Pattern pattern = Pattern.compile("(?<= ttl=)\\d+ ", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("(?<= ttl=)\\d+", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(result);
         String ttlString = null;
-        try {
+        if (matcher.find()){
             ttlString = matcher.group();
-        } catch (IllegalStateException ignore){}
-
-        if (ttlString.length() == 0){
+        }
+        if (ttlString == null || ttlString.length() == 0){
             return -1;
         } else {
             return Integer.parseInt(ttlString);
         }
     }
 
-    private int getPingTime(){
-        Pattern pattern = Pattern.compile("(?<= time=)(\\d+(\\.\\d+)? )", Pattern.CASE_INSENSITIVE);
+    private float getPingTime(){
+        Pattern pattern = Pattern.compile("(?<= time=)(\\d+(\\.\\d+)?)", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(result);
         String timeString = null;
-        try {
+        if (matcher.find()){
             timeString = matcher.group();
-        } catch (IllegalStateException ignore){}
-
-        if (timeString.length() == 0){
+        }
+        if (timeString == null || timeString.length() == 0){
             return -1;
         } else {
-            return Integer.parseInt(timeString);
+            return Float.parseFloat(timeString);
         }
     }
 
@@ -151,11 +154,10 @@ public class PingResultParser {
         Pattern pattern = Pattern.compile("(\\d+)(?= packets transmitted)", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(result);
         String countString = null;
-        try {
+        if (matcher.find()){
             countString = matcher.group();
-        } catch (IllegalStateException ignore){}
-
-        if (countString.length() == 0){
+        }
+        if (countString == null || countString.length() == 0){
             return -1;
         } else {
             return Integer.parseInt(countString);
@@ -166,11 +168,10 @@ public class PingResultParser {
         Pattern pattern = Pattern.compile("(\\d+)(?= received,)", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(result);
         String countString = null;
-        try {
+        if (matcher.find()){
             countString = matcher.group();
-        } catch (IllegalStateException ignore){}
-
-        if (countString.length() == 0){
+        }
+        if (countString == null || countString.length() == 0){
             return -1;
         } else {
             return Integer.parseInt(countString);
